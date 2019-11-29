@@ -1,0 +1,78 @@
+{
+    "variables": {
+        "kms_key_id": "{{env `KEY`}}",
+        "region": "{{env `AWS_REGION`}}"
+    },
+    "builders": [{
+        "type": "amazon-ebs",
+        "region": "{{user `region`}}",
+        "encrypt_boot": "true",
+        "kms_key_id": "{{user `kms_key_id`}}",
+        "instance_type": "t2.micro",
+        "ssh_username": "ec2-user",
+        "ami_description": "Amazon Linux2 Baseline AMI to be used to build from",
+        "ami_name": "Amazon-Linux2-Base-AMI-{{isotime \"2006-01-02\"}}",
+        "tags": {
+            "Name": "Amazon-Linux2-Base-AMI",
+            "ami_version": "{{isotime \"2006-01-02\"}}",
+            "ami_os": "Amazon Linux 2"
+        },
+        "force_deregister": "true",
+        "source_ami_filter": {
+            "filters": {
+                "virtualization-type": "hvm",
+                "root-device-type": "ebs",
+                "name": "amzn2-ami-hvm-*-x86_64-gp2"
+            },
+            "owners": "031439099551",
+            "most_recent": true
+        },
+        "snapshot_tags": {
+            "Name": "Amazon-Linux2-Base-AMI-Snapshot-{{isotime \"2006-01-02\"}}",
+            "snapshot_version": "{{isotime \"2006-01-02\"}}",
+            "snapshot_os": "Amazon Linux 2"
+        }
+    }],
+    "provisioners": [{
+            "type": "shell",
+            "remote_folder": "/home/ec2-user",
+            "expect_disconnect": true,
+            "inline": [
+                "sudo sleep 10",
+                "sudo yum update -y",
+                "sudo yum install unzip awslogs -y",
+                "sudo sed -i '7i server 169.254.169.123 prefer iburst' /etc/chrony.conf",
+                "sudo easy_install pip",
+                "sudo pip install --upgrade --user boto",
+                "sudo pip install --upgrade --user boto3",
+                "sudo pip install --upgrade --user awscli",
+                "sudo systemctl enable awslogsd"
+            ]
+        },
+        {
+            "type": "file",
+            "source": "scripts/cloudwatch-agent-config-AMZ-base-ami.conf",
+            "destination": "/home/ec2-user/awslogs.conf"
+        },
+        {
+            "type": "shell",
+            "remote_folder": "/home/ec2-user",
+            "inline": [
+                "sudo mv /home/ec2-user/awslogs.conf /etc/awslogs/awslogs.conf"
+            ]
+        },
+        {
+            "type": "file",
+            "source": "scripts/cloudwatch-config-awscli.conf",
+            "destination": "/home/ec2-user/awscli.conf"
+        },
+        {
+            "type": "shell",
+            "remote_folder": "/home/ec2-user",
+            "expect_disconnect": true,
+            "inline": [
+                "sudo mv /home/ec2-user/awscli.conf /etc/awslogs/awscli.conf"
+            ]
+        }
+    ]
+}
