@@ -51,7 +51,7 @@
         },
         {
             "type": "file",
-            "source": "scripts/cw-agent-config-amzon-linux2.conf",
+            "source": "config/cw-agent-config-amzon-linux2.conf",
             "destination": "/home/ec2-user/awslogs.conf"
         },
         {
@@ -63,7 +63,7 @@
         },
         {
             "type": "file",
-            "source": "scripts/cw-config-awscli.conf",
+            "source": "config/cw-config-awscli.conf",
             "destination": "/home/ec2-user/awscli.conf"
         },
         {
