@@ -6,7 +6,7 @@
     "builders": [{
         "type": "amazon-ebs",
         "region": "{{user `region`}}",
-        "encrypt_boot": "true",
+        "encrypt_boot": "false",
         "kms_key_id": "{{user `kms_key_id`}}",
         "instance_type": "t2.micro",
         "ssh_username": "ec2-user",
